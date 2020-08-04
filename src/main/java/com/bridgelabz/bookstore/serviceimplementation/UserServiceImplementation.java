@@ -463,6 +463,7 @@ public class UserServiceImplementation implements UserService {
         UserModel userInfo = userRepository.findByUserId(id);
         List<CartModel> allItemFromCart = getAllItemFromCart(token);
         long orderId = getOrderId();
+        System.out.println("order id"+ orderId);
         String bookName = "\n";
         String price = "";
         double totalPrice = 0;
@@ -480,9 +481,10 @@ public class UserServiceImplementation implements UserService {
             order.setQuantity(cartModel.getQuantity());
             orderRepository.save(order);
             System.out.println("cart deletion started");
-            cartRepository.delete(cartModel);
+            //cartRepository.delete(cartModel);
             System.out.println("cart deletion happened");
         }
+        cartRepository.deleteAllByUserId(id);
         if (userInfo != null) {
             String response =
                     "==================\n" +
@@ -506,7 +508,9 @@ public class UserServiceImplementation implements UserService {
                             "mob. : +91-9771971429\n" +
                             "email : admin@onlinebookstore.com\n";
             if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response, "Order Placed"))) {
+
                 return new Response(HttpStatus.OK.value(), "Order Successfull", orderId);
+
             }
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK.value());
